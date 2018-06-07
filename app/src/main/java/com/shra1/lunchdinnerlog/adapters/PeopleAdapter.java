@@ -37,6 +37,21 @@ public class PeopleAdapter extends RecyclerView.Adapter<PeopleAdapter.PAViewHold
         h.tvAddress.setText(people.get(position).getAddress());
         h.tvPhone.setText(people.get(position).getPhone());
 
+        if (people.get(position).isSelectedDaysTiffinEntryDone()){
+            h.bTiffin.setEnabled(false);
+        }else{
+            h.bTiffin.setEnabled(true);
+        }
+
+
+        if (people.get(position).isSelectedDaysDinnerEntryDone()){
+            h.bDinner.setEnabled(false);
+        }else{
+            h.bDinner.setEnabled(true);
+        }
+
+
+
         h.bTiffin.setOnClickListener(bt->{
             c.onClickTiffinButton(people.get(position), position);
         });

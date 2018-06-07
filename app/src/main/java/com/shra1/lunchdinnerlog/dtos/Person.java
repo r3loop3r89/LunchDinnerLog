@@ -20,7 +20,10 @@ public class Person {
     String Phone;
     long AddedOnEpoch;
     @Ignore
-    boolean isSelectedDaysEntryDone;
+    boolean isSelectedDaysTiffinEntryDone;
+
+    @Ignore
+    boolean isSelectedDaysDinnerEntryDone;
 
     public Person() {
     }
@@ -33,12 +36,20 @@ public class Person {
         AddedOnEpoch = addedOnEpoch;
     }
 
-    public boolean isSelectedDaysEntryDone() {
-        return isSelectedDaysEntryDone;
+    public boolean isSelectedDaysTiffinEntryDone() {
+        return isSelectedDaysTiffinEntryDone;
     }
 
-    public void setSelectedDaysEntryDone(boolean selectedDaysEntryDone) {
-        isSelectedDaysEntryDone = selectedDaysEntryDone;
+    public void setSelectedDaysTiffinEntryDone(boolean selectedDaysTiffinEntryDone) {
+        isSelectedDaysTiffinEntryDone = selectedDaysTiffinEntryDone;
+    }
+
+    public boolean isSelectedDaysDinnerEntryDone() {
+        return isSelectedDaysDinnerEntryDone;
+    }
+
+    public void setSelectedDaysDinnerEntryDone(boolean selectedDaysDinnerEntryDone) {
+        isSelectedDaysDinnerEntryDone = selectedDaysDinnerEntryDone;
     }
 
     public int getId() {
@@ -89,8 +100,13 @@ public class Person {
         }
 
         public static void getPeopleData(AppDatabase adb, DateTime dt, GetPeopleDataTaskCallback c) {
-            GetPeopleDataTask getPeopleDataTask = new GetPeopleDataTask(c);
-            getPeopleDataTask.execute(adb);
+
+            TiffinDinnerEntry.DBCommands.getTiffinDinnerEntriesForDate(adb, dt, tiffinEntries -> {
+                GetPeopleDataTask getPeopleDataTask = new GetPeopleDataTask(c, tiffinEntries);
+                getPeopleDataTask.execute(adb);
+            });
+
+
         }
 
         public interface GetPeopleDataTaskCallback {
@@ -103,15 +119,36 @@ public class Person {
 
         static class GetPeopleDataTask extends AsyncTask<Object, Void, List<Person>> {
             GetPeopleDataTaskCallback c;
+            List<TiffinDinnerEntry> tiffinEntries;
 
-            public GetPeopleDataTask(GetPeopleDataTaskCallback c) {
+            public GetPeopleDataTask(GetPeopleDataTaskCallback c, List<TiffinDinnerEntry> tiffinEntries) {
                 this.c = c;
+                this.tiffinEntries = tiffinEntries;
             }
 
             @Override
             protected List<Person> doInBackground(Object... objects) {
                 AppDatabase adb = (AppDatabase) objects[0];
-                return adb.getPersonDao().getPeopleData();
+                List<Person> people = adb.getPersonDao().getPeopleData();
+
+                for (TiffinDinnerEntry tde:tiffinEntries){
+                    for (Person p: people){
+                        if (p.Id==tde.PersonId){
+                            if (tde.EntryType.equals("TIFFIN")){
+                                p.setSelectedDaysTiffinEntryDone(true);
+                            }else{
+                                p.setSelectedDaysTiffinEntryDone(false);
+                            }
+                            if (tde.EntryType.equals("DINNER")){
+                                p.setSelectedDaysDinnerEntryDone(true);
+                            }else {
+                                p.setSelectedDaysDinnerEntryDone(false);
+                            }
+                        }
+                    }
+                }
+
+                return people;
             }
 
             @Override

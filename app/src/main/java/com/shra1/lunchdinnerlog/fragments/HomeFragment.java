@@ -131,9 +131,10 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onClickTiffinButton(Person selectedPerson, int position) {
                     Utils.showToast(mCtx, "Clicked on " + selectedPerson.getFullName() + "'s Tiffin");
-                    TiffinDinnerEntry tiffinDinnerEntry = new TiffinDinnerEntry(selectedPerson.getId(), System.currentTimeMillis(), "TIFFIN");
+                    TiffinDinnerEntry tiffinDinnerEntry = new TiffinDinnerEntry(selectedPerson.getId(), dateTime.getMillis(), "TIFFIN");
                     TiffinDinnerEntry.DBCommands.addTiffinEntry(adb, tiffinDinnerEntry, id -> {
                         Utils.showToast(mCtx, "Added tiffin entry");
+                        loadDataForDate();
                     });
                 }
 
